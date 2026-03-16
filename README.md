@@ -2,15 +2,15 @@
 
 ![Vynora Icon](Vynora.png)
 
-Vynora é um player de música premium construído com Electron, inspirado na estética clássica do iTunes CoverFlow, mas com um toque moderno de animações fluidas e design em vidro (glassmorphism).
+Vynora é um player de música construído com Electron, inspirado no iTunes CoverFlow
 
 ## 🚀 Funcionalidades
 
-- **Visualizador de Mercúrio**: Animações de volume dinâmicas com efeito de mercúrio líquido.
-- **Integração iTunes API**: Busca automática de capas de alta qualidade para suas músicas.
-- **Cache Inteligente**: Capas são extraídas dos metadados locais ou salvas em disco para carregamento instantâneo.
-- **Multiplataforma**: Suporte nativo para Linux (AppImage, deb, pacman), Windows e macOS.
-- **Design Premium**: Interface responsiva, modo escuro e micro-interações suaves com Framer Motion.
+- **Visualizador Mercúrio**: Animações de volume dinâmicas com efeito de mercúrio líquido.
+- **Integração API**: Busca automática de capas para suas músicas.
+- **Cache**: Capas são extraídas dos metadados locais ou salvas em disco para carregamento.
+- **Multiplataforma**: Suporte Linux (AppImage, deb, pacman), Windows e macOS.
+- **Design**: modo escuro e micro-interações suaves com Framer Motion.
 
 ## 📸 Screenshots
 
@@ -22,7 +22,7 @@ Vynora é um player de música premium construído com Electron, inspirado na es
 
 ## 🛠️ Como Instalar (Arch Linux)
 
-Se você estiver no Arch Linux, pode buildar e instalar diretamente usando o nosso PKGBUILD:
+Se você estiver no Arch Linux, pode buildar e instalar diretamente usando o PKGBUILD:
 
 ```bash
 makepkg -si
@@ -38,15 +38,13 @@ npm install
 
 # Rodar em modo de desenvolvimento
 npm run electron:dev
-
-# Gerar pacotes para todas as plataformas
-./build.sh all
 ```
 
 ---
 
 ## 💡 Sobre o Projeto
 
-Este projeto começou como um experimento baseado em um design do Figma e evoluiu para um player funcional e altamente otimizado. Criado apenas por diversão e para explorar animações complexas no Electron.
+Eu vi isso no Figma de um cara que criou isso com ia entao eu fiz o downlaod do projeto dele e comecei a buildar ele e brincar com o app entao so estou salvando ele no gihub para caso um dia eu queira mexer nele dnv
+caso alguem queira testa e so baixar o app
 
 [English Version (English README)](README%20(EN).md)

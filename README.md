@@ -4,9 +4,9 @@
 
 # Prints
 
-![screenshot-20260316-144610.png Preview](screenshot-20260316-144610.png)
-![screenshot-20260316-144616.png Preview](screenshot-20260316-144616.png)
-![screenshot-20260316-144623.png Preview](screenshot-20260316-144623.png)
+![1.png Preview](1.png)
+![2.png Preview](2.png)
+![3.png Preview](3.png)
 
 # Fiz isso apenas por diversao entao nao e algo serio!!
 

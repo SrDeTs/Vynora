@@ -2,9 +2,9 @@
   "name": "vynora",
   "private": true,
   "version": "1.0.0",
-  "description": "Premium iPod CoverFlow clone with iTunes API integration",
-  "author": "Michael <michael@example.com>",
-  "homepage": "https://github.com/vynora/app",
+  "description": "CoverFlow clone",
+  "author": "SrDeTs <github.com/SrDeTs>",
+  "homepage": "https://github.com/SrDeTs/Vynora",
   "main": "electron-main.js",
   "type": "module",
   "scripts": {
@@ -40,9 +40,9 @@
   "build": {
     "appId": "com.vynora.app",
     "linux": {
-      "category": "AudioVideo",
-      "maintainer": "Michael <michael@example.com>",
-      "icon": "build/icon.png",
+      "category": "Audio",
+      "maintainer": "SrDeTs <github.com/SrDeTs>",
+      "icon": "Vynora.png",
       "target": [
         "AppImage",
         "deb",
@@ -54,13 +54,13 @@
       ]
     },
     "mac": {
-      "icon": "build/icon.png",
+      "icon": "Vynora.png",
       "target": [
         "zip"
       ]
     },
     "win": {
-      "icon": "build/icon.png",
+      "icon": "Vynora.png",
       "target": [
         "nsis",
         "portable"
@@ -80,6 +80,6 @@
     "asarUnpack": [
       "node_modules/music-metadata"
     ],
-    "electronLanguages": ["pt-BR", "en-US"]
+    "electronLanguages": ["pt-BR"]
   }
 }

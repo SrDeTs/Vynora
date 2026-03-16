@@ -54,13 +54,13 @@
       ]
     },
     "mac": {
-      "icon": "Vynora.png",
+      "icon": "build/icon.png",
       "target": [
         "zip"
       ]
     },
     "win": {
-      "icon": "Vynora.png",
+      "icon": "build/icon.png",
       "target": [
         "nsis",
         "portable"

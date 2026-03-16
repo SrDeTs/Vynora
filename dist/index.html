@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vynora</title>
+    <script type="module" crossorigin src="./assets/index-BF6CjWrW.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DOJ7eMcu.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Force ipcRenderer available globally
+      try {
+        window.ipcRenderer = require('electron').ipcRenderer;
+        console.log('IPC Renderer exposed');
+      } catch (e) {
+        console.warn('IPC Renderer exposure failed - expected in web browser, not in Electron');
+      }
+    </script>
+  </body>
+</html>

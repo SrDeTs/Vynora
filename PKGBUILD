@@ -40,7 +40,7 @@ exec electron /usr/lib/$pkgname/electron-main.js \"\$@\"" > "$pkgdir/usr/bin/$pk
   # Instala os ícones do sistema em múltiplas resoluções
   for size in 16 32 48 64 128 256 512; do
     install -dm755 "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps"
-    cp build/icons/${size}x${size}/apps/vynora.png "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/vynora.png"
+    cp build/icons/${size}.png "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/vynora.png"
   done
   
   # Pixmap de fallback

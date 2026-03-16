@@ -23,7 +23,7 @@ function ReflectionComponent({
 
   return (
     <div 
-      className="absolute top-full left-0 w-full h-full rounded-lg pointer-events-none select-none transition-all duration-500"
+      className="absolute top-full left-0 w-full h-full rounded-lg pointer-events-none select-none transition-all duration-400"
       style={{
         backgroundImage: `url(${albumCover})`,
         backgroundSize: 'cover',
@@ -56,7 +56,13 @@ export function CoverFlow({
   getCover,
   isLoading
 }: CoverFlowProps) {
-  const [currentIndex, setCurrentIndex] = useState(() => Math.floor(songs.length / 2));
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    if (selectedSong) {
+      const idx = songs.findIndex(s => s.id === selectedSong.id);
+      return idx !== -1 ? idx : Math.floor(songs.length / 2);
+    }
+    return Math.floor(songs.length / 2);
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
@@ -70,12 +76,11 @@ export function CoverFlow({
   useEffect(() => {
     if (selectedSong) {
       const index = songs.findIndex(song => song.id === selectedSong.id);
-      if (index !== -1) {
+      if (index !== -1 && index !== currentIndex) {
         setCurrentIndex(index);
       }
     }
   }, [selectedSong, songs]);
-
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -318,7 +323,7 @@ export function CoverFlow({
                   src={getCover(song)!}
                   alt={song.title}
                   draggable={false}
-                  className="w-full h-full object-cover rounded-lg shadow-2xl border border-gray-800/30 select-none"
+                  className="w-full h-full object-cover rounded-lg shadow-2xl border border-gray-800/30 select-none transition-opacity duration-700 animate-in fade-in"
                   style={{
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)',
                     userSelect: 'none'
@@ -326,7 +331,7 @@ export function CoverFlow({
                 />
               ) : (
                 <div 
-                  className="w-full h-full rounded-lg shadow-2xl border border-gray-800/30 select-none flex items-center justify-center bg-gradient-to-br from-gray-950 to-black"
+                  className="w-full h-full rounded-lg shadow-2xl border border-gray-800/30 select-none flex items-center justify-center bg-gradient-to-br from-gray-950 to-black transition-opacity duration-300"
                   style={{
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)',
                     userSelect: 'none'
@@ -366,29 +371,28 @@ export function CoverFlow({
               
               {/* Floor highlight - subtle light reflection on the floor */}
               <div 
-                className="absolute top-full left-0 w-full h-3 rounded-lg pointer-events-none select-none transition-opacity duration-1000"
+                className="absolute top-full left-0 w-full h-3 rounded-lg pointer-events-none select-none transition-all duration-400"
                 style={{
                   background: 'linear-gradient(to bottom, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.12) 40%, transparent 100%)',
                   transform: 'translateY(6px)',
-                  opacity: index === currentIndex ? '0.6' : '0.35' // Consistent glow regardless of playing state
+                  opacity: index === currentIndex ? '0.6' : '0'
                 }}
               />
               
-              {/* Clean center card effects */}
-              {index === currentIndex && (
-                <>
-                  {/* Subtle border for center card - no glow overlay */}
-                  <div className="absolute inset-0 rounded-lg border border-white/30 shadow-2xl"></div>
-                  
-                  {/* Simple indicator */}
-                  <div className="absolute top-3 right-3 w-2.5 h-2.5 bg-white rounded-full opacity-90 shadow-lg animate-pulse"></div>
-                  
-                  {/* Light reflection on top edge */}
-                  <div 
-                    className="absolute top-0 left-1/4 right-1/4 h-1 bg-white/20 rounded-full blur-sm"
-                  />
-                </>
-              )}
+              {/* Center card specific highlights - Using opacity for smooth transitions instead of conditional rendering */}
+              <div 
+                className={`absolute inset-0 rounded-lg border border-white/30 shadow-2xl transition-opacity duration-500 pointer-events-none ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}
+              />
+              
+              {/* Simple indicator */}
+              <div 
+                className={`absolute top-3 right-3 w-2.5 h-2.5 bg-white rounded-full shadow-lg animate-pulse transition-opacity duration-500 pointer-events-none ${index === currentIndex ? 'opacity-90' : 'opacity-0'}`}
+              />
+              
+              {/* Light reflection on top edge */}
+              <div 
+                className={`absolute top-0 left-1/4 right-1/4 h-1 bg-white/20 rounded-full blur-sm transition-opacity duration-500 pointer-events-none ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}
+              />
             </div>
           </div>
         ))}

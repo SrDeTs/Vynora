@@ -29,6 +29,7 @@ export function Player({
   const fadeInterval = useRef<any>(null);
   const audioContext = useRef<AudioContext | null>(null);
   const filters = useRef<{ f1: BiquadFilterNode | null, f2: BiquadFilterNode | null }>({ f1: null, f2: null });
+  const sources = useRef<{ s1: MediaElementAudioSourceNode | null, s2: MediaElementAudioSourceNode | null }>({ s1: null, s2: null });
 
   // Sync internal state with prop
   useEffect(() => {
@@ -59,27 +60,42 @@ export function Player({
       audioContext.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
 
-    if (audioContext.current.state === 'suspended') {
-      audioContext.current.resume();
-    }
+    const setupAudioChain = (audio: HTMLAudioElement, key: '1' | '2') => {
+      if (!audioContext.current) return;
 
-    const setupFilter = (audio: HTMLAudioElement, key: 'f1' | 'f2') => {
-      if (!filters.current[key] && audioContext.current) {
-        const source = audioContext.current.createMediaElementSource(audio);
+      const filterKey = `f${key}` as 'f1' | 'f2';
+      const sourceKey = `s${key}` as 's1' | 's2';
+
+      if (!sources.current[sourceKey]) {
+        sources.current[sourceKey] = audioContext.current.createMediaElementSource(audio);
+      }
+
+      const source = sources.current[sourceKey]!;
+      
+      // If bass boost is enabled and filter doesn't exist, create it
+      if (bassBoost && !filters.current[filterKey]) {
         const filter = audioContext.current.createBiquadFilter();
         filter.type = 'lowshelf';
         filter.frequency.value = 200;
-        filter.gain.value = 10; // 10dB boost
-        source.connect(filter);
-        filter.connect(audioContext.current.destination);
-        filters.current[key] = filter;
-      } else if (filters.current[key]) {
-        filters.current[key]!.gain.value = 10;
+        filter.gain.value = 10;
+        filters.current[filterKey] = filter;
+      }
+
+      // Disconnect everything first to avoid duplicate connections
+      source.disconnect();
+      if (filters.current[filterKey]) filters.current[filterKey]!.disconnect();
+
+      // Connect: Source -> (Optional Filter) -> Destination
+      if (bassBoost && filters.current[filterKey]) {
+        source.connect(filters.current[filterKey]!);
+        filters.current[filterKey]!.connect(audioContext.current.destination);
+      } else {
+        source.connect(audioContext.current.destination);
       }
     };
 
-    if (audioRef1.current) setupFilter(audioRef1.current, 'f1');
-    if (audioRef2.current) setupFilter(audioRef2.current, 'f2');
+    if (audioRef1.current) setupAudioChain(audioRef1.current, '1');
+    if (audioRef2.current) setupAudioChain(audioRef2.current, '2');
 
   }, [bassBoost]);
 

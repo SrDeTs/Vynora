@@ -11,8 +11,6 @@ interface AppearanceTabProps {
   onDynamicMercuryChange: (isDynamic: boolean) => void;
   showCustomPicker: number | null;
   setShowCustomPicker: (index: number | null) => void;
-  isElectricEnabled: boolean;
-  onElectricEnabledChange: (isEnabled: boolean) => void;
 }
 
 export function AppearanceTab({
@@ -23,9 +21,7 @@ export function AppearanceTab({
   isDynamicMercury,
   onDynamicMercuryChange,
   showCustomPicker,
-  setShowCustomPicker,
-  isElectricEnabled,
-  onElectricEnabledChange
+  setShowCustomPicker
 }: AppearanceTabProps) {
   // Ultra-Premium Dynamic Palette: Deep Sapphire, Electric Cyan, Emerald, Chrome, Crimson
   const dynamicGradient = 'linear-gradient(90deg, #0f172a 0%, #06b6d4 25%, #10b981 50%, #94a3b8 75%, #e11d48 100%)';
@@ -40,22 +36,6 @@ export function AppearanceTab({
       className="h-full relative overflow-hidden"
     >
       <div className="space-y-6 h-full vynora-scrollbar overflow-y-auto pr-2 pb-40">
-        {/* Electric Border Toggle */}
-        <div className="p-4 bg-white/5 rounded-3xl border border-white/10 flex items-center justify-between mb-4">
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-white tracking-tight">Bordas Elétricas</span>
-            <span className="text-[10px] text-gray-500 max-w-[200px]">Ativa uma aura de energia pulsante nas bordas do Vynora.</span>
-          </div>
-          <button
-            onClick={() => onElectricEnabledChange(!isElectricEnabled)}
-            className={`w-12 h-6 rounded-full transition-all relative ${isElectricEnabled ? 'bg-blue-500' : 'bg-zinc-700'}`}
-          >
-            <motion.div
-              animate={{ x: isElectricEnabled ? 26 : 4 }}
-              className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-lg"
-            />
-          </button>
-        </div>
 
         {/* Theme Selector */}
         <div className="space-y-4">

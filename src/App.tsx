@@ -10,7 +10,8 @@ import { useLazyAlbumCovers } from './hooks/useLazyAlbumCovers';
 import { VolumeThermometer } from './components/VolumeThermometer';
 import { SnowParticles } from './components/SnowParticles';
 import { logger } from './utils/logger';
-import { ElectricBorderAnimation } from './components/shared/ElectricBorderAnimation';
+import { SongGrid } from './components/SongGrid';
+import { LayoutGrid, GalleryHorizontal } from 'lucide-react';
 
 // Expose to window for modal access
 (window as any).logs = [];
@@ -24,7 +25,6 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [hasLoadedLibrary, setHasLoadedLibrary] = useState(false);
@@ -32,7 +32,7 @@ export default function App() {
   // Lazy loading covers hook
   const { getSongCover, isSongLoading, clearCache } = useLazyAlbumCovers({
     songs,
-    centerIndex: currentIndex
+    centerIndex: selectedSong ? songs.findIndex(s => s.id === selectedSong.id) : 0
   });
   
   // Extra settings states
@@ -40,6 +40,9 @@ export default function App() {
   const [playbackSpeed, setPlaybackSpeed] = useState(Number(localStorage.getItem('vynora_speed')) || 1);
   const [bassBoost, setBassBoost] = useState(localStorage.getItem('vynora_bass') === 'true');
   const [volume, setVolume] = useState(Number(localStorage.getItem('vynora_volume')) || 0.7);
+  const [viewType, setViewType] = useState<'coverflow' | 'grid'>(
+    (localStorage.getItem('vynora_view_type') as 'coverflow' | 'grid') || 'coverflow'
+  );
   const [thermometerColors, setThermometerColors] = useState<string[]>(() => {
     const saved = localStorage.getItem('vynora_mercury_colors');
     // Premium Mercury Palette: Deep Sapphire, Electric Cyan, Emerald, Chrome, Crimson
@@ -47,9 +50,6 @@ export default function App() {
   });
   const [isDynamicMercury, setIsDynamicMercury] = useState(() => {
     return localStorage.getItem('vynora_is_dynamic_mercury') !== 'false';
-  });
-  const [isElectricEnabled, setIsElectricEnabled] = useState(() => {
-    return localStorage.getItem('vynora_is_electric_enabled') !== 'false';
   });
 
   useEffect(() => {
@@ -59,8 +59,8 @@ export default function App() {
     localStorage.setItem('vynora_volume', volume.toString());
     localStorage.setItem('vynora_mercury_colors', JSON.stringify(thermometerColors));
     localStorage.setItem('vynora_is_dynamic_mercury', isDynamicMercury.toString());
-    localStorage.setItem('vynora_is_electric_enabled', isElectricEnabled.toString());
-  }, [theme, playbackSpeed, bassBoost, volume, thermometerColors, isDynamicMercury, isElectricEnabled]);
+    localStorage.setItem('vynora_view_type', viewType);
+  }, [theme, playbackSpeed, bassBoost, volume, thermometerColors, isDynamicMercury, viewType]);
 
   // Initialize library from localStorage if available
   useEffect(() => {
@@ -100,7 +100,6 @@ export default function App() {
   const handleFolderLoaded = (newSongs: Song[]) => {
     setSongs(newSongs);
     setSelectedSong(newSongs[Math.floor(newSongs.length / 2)]);
-    setCurrentIndex(Math.floor(newSongs.length / 2));
     setHasLoadedLibrary(true);
     setIsSettingsOpen(false);
     localStorage.setItem('vynora_library', JSON.stringify(newSongs));
@@ -117,11 +116,6 @@ export default function App() {
   const handleSongSelect = (song: Song) => {
     setSelectedSong(song);
     setIsPlaying(true);
-    
-    const index = songs.findIndex(s => s.id === song.id);
-    if (index !== -1) {
-      setCurrentIndex(index);
-    }
   };
 
   const handlePlayingChange = (playing: boolean) => {
@@ -216,7 +210,16 @@ export default function App() {
         <div className="text-sm font-medium text-gray-300 tracking-wider uppercase">
           {displayText}
         </div>
-        <SettingsButton onClick={() => setIsSettingsOpen(true)} />
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setViewType(viewType === 'coverflow' ? 'grid' : 'coverflow')}
+            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+            title={viewType === 'coverflow' ? 'Mudar para Grade' : 'Mudar para Carrossel'}
+          >
+            {viewType === 'coverflow' ? <LayoutGrid size={20} /> : <GalleryHorizontal size={20} />}
+          </button>
+          <SettingsButton onClick={() => setIsSettingsOpen(true)} />
+        </div>
       </div>
 
       {/* Main Content Area with conditional blur */}
@@ -224,12 +227,6 @@ export default function App() {
         className={`relative flex-1 flex flex-col transition-all duration-500 ${isSettingsOpen ? 'blur-md opacity-20 scale-[0.98]' : 'blur-0 opacity-100 scale-100'}`}
         style={{ zIndex: 100 }}
       >
-        <ElectricBorderAnimation 
-          isActive={isPlaying} 
-          isEnabled={isElectricEnabled}
-          intensity={volume}
-          color={thermometerColors[0]}
-        >
           {/* Search Bar */}
           <div className="relative p-6 w-full max-w-2xl mx-auto" style={{ zIndex: 450 }}>
             <SearchBar onSearch={handleSearch} />
@@ -271,14 +268,30 @@ export default function App() {
             ) : (
               <>
                 <div className="w-full flex-1 flex items-center justify-center overflow-visible">
-                  <CoverFlow 
-                    songs={filteredSongs} 
-                    onSongSelect={handleSongSelect}
-                    selectedSong={selectedSong}
-                    isPlaying={isPlaying}
-                    getCover={getSongCover}
-                    isLoading={isSongLoading}
-                  />
+                  {viewType === 'coverflow' ? (
+                    <CoverFlow 
+                      songs={filteredSongs} 
+                      onSongSelect={handleSongSelect}
+                      selectedSong={selectedSong}
+                      isPlaying={isPlaying}
+                      getCover={getSongCover}
+                      isLoading={isSongLoading}
+                    />
+                  ) : (
+                    <div className="w-full flex-1">
+                      <SongGrid 
+                        songs={songs}
+                        onReorder={(newSongs) => {
+                          setSongs(newSongs);
+                          localStorage.setItem('vynora_library', JSON.stringify(newSongs));
+                        }}
+                        onSongSelect={handleSongSelect}
+                        selectedSong={selectedSong}
+                        getCover={getSongCover}
+                        isSongLoading={isSongLoading}
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 {selectedSong && (
@@ -297,12 +310,16 @@ export default function App() {
                       bassBoost={bassBoost}
                       volume={volume}
                       onNext={() => {
-                        const nextIndex = (currentIndex + 1) % filteredSongs.length;
+                        if (filteredSongs.length === 0) return;
+                        const index = selectedSong ? filteredSongs.findIndex(s => s.id === selectedSong.id) : -1;
+                        const nextIndex = (index + 1) % filteredSongs.length;
                         handleSongSelect(filteredSongs[nextIndex]);
                       }}
                       onPrevious={() => {
-                        const prevIndex = (currentIndex - 1 + filteredSongs.length) % filteredSongs.length;
-                        handleSongSelect(prevIndex >= 0 ? filteredSongs[prevIndex] : filteredSongs[filteredSongs.length - 1]);
+                        if (filteredSongs.length === 0) return;
+                        const index = selectedSong ? filteredSongs.findIndex(s => s.id === selectedSong.id) : -1;
+                        const prevIndex = (index - 1 + filteredSongs.length) % filteredSongs.length;
+                        handleSongSelect(filteredSongs[prevIndex]);
                       }}
                     />
                   </div>
@@ -310,7 +327,6 @@ export default function App() {
               </>
             )}
           </div>
-        </ElectricBorderAnimation>
       </div>
 
       {/* Volume Thermometer - Rendered via Portal inside the component */}
@@ -338,8 +354,6 @@ export default function App() {
         onThermometerColorsChange={setThermometerColors}
         isDynamicMercury={isDynamicMercury}
         onDynamicMercuryChange={setIsDynamicMercury}
-        isElectricEnabled={isElectricEnabled}
-        onElectricEnabledChange={setIsElectricEnabled}
       />
     </div>
   );

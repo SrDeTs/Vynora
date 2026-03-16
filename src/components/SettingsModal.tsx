@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, FolderOpen, Palette, Settings, Activity, Server } from 'lucide-react';
+import { X, FolderOpen, Palette, Settings, Activity, Server, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JellyfinService } from '../services/jellyfinService';
 
@@ -25,8 +25,6 @@ interface SettingsModalProps {
   onThermometerColorsChange: (colors: string[]) => void;
   isDynamicMercury: boolean;
   onDynamicMercuryChange: (isDynamic: boolean) => void;
-  isElectricEnabled: boolean;
-  onElectricEnabledChange: (isEnabled: boolean) => void;
 }
 
 export function SettingsModal({ 
@@ -43,9 +41,7 @@ export function SettingsModal({
   thermometerColors,
   onThermometerColorsChange,
   isDynamicMercury,
-  onDynamicMercuryChange,
-  isElectricEnabled,
-  onElectricEnabledChange
+  onDynamicMercuryChange
 }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<'local' | 'jellyfin' | 'appearance' | 'advanced' | 'logs'>('local');
   const [showCustomPicker, setShowCustomPicker] = useState<number | null>(null);
@@ -132,24 +128,16 @@ export function SettingsModal({
       
       {/* Modal Content */}
       <div 
-        className="relative w-full max-w-2xl bg-zinc-900/60 backdrop-blur-3xl border border-white/20 rounded-[40px] shadow-[0_0_100px_rgba(0,0,0,0.9)] animate-zoom-in"
+        className="relative w-full max-w-2xl bg-zinc-900/60 backdrop-blur-3xl border border-white/20 rounded-[40px] shadow-[0_0_100px_rgba(0,0,0,0.9)] animate-zoom-in overflow-hidden"
         style={{ zIndex: 10000 }}
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-extrabold text-white tracking-tight">Configurações</h2>
-            <motion.button 
-              whileHover={{ scale: 1.1, rotate: 90 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={onClose}
-              className="p-3 hover:bg-white/10 rounded-full transition-all"
-            >
-              <X size={24} className="text-gray-400" />
-            </motion.button>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex gap-1 mb-8 p-1.5 bg-black/30 backdrop-blur-3xl rounded-[24px] border border-white/5 relative overflow-hidden">
+          <div className="flex gap-2 mb-8 p-1.5 bg-black/30 backdrop-blur-3xl rounded-[24px] border border-white/5 relative overflow-hidden">
             {[
               { id: 'local', label: 'Arquivos', icon: FolderOpen },
               { id: 'jellyfin', label: 'Jellyfin', icon: Server },
@@ -213,8 +201,6 @@ export function SettingsModal({
                   onDynamicMercuryChange={onDynamicMercuryChange}
                   showCustomPicker={showCustomPicker}
                   setShowCustomPicker={setShowCustomPicker}
-                  isElectricEnabled={isElectricEnabled}
-                  onElectricEnabledChange={onElectricEnabledChange}
                 />
               )}
               {activeTab === 'advanced' && (

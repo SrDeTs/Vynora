@@ -35,6 +35,10 @@ package() {
 exec electron /usr/lib/$pkgname/electron-main.js \"\$@\"" > "$pkgdir/usr/bin/$pkgname"
   chmod +x "$pkgdir/usr/bin/$pkgname"
 
+  # Instala o ícone do sistema
+  install -dm755 "$pkgdir/usr/share/icons/hicolor/512x512/apps"
+  cp Vynora.png "$pkgdir/usr/share/icons/hicolor/512x512/apps/vynora.png"
+
   # Desktop Entry (Opcional, mas recomendado)
   install -dm755 "$pkgdir/usr/share/applications"
   echo "[Desktop Entry]

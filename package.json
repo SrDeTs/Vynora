@@ -40,17 +40,26 @@
   "build": {
     "appId": "com.vynora.app",
     "linux": {
-      "icon": "Vynora.png",
+      "icon": "build/icon.png",
       "target": [
         "AppImage",
         "deb",
-        "pacman"
+        "rpm",
+        "pacman",
+        "zip"
       ],
       "executableArgs": [
         "--no-sandbox"
       ]
     },
+    "mac": {
+      "icon": "build/icon.png",
+      "target": [
+        "zip"
+      ]
+    },
     "win": {
+      "icon": "build/icon.png",
       "target": [
         "nsis",
         "portable"

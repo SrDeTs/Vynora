@@ -10,7 +10,7 @@ Vynora é um player de música construído com Electron, inspirado no iTunes Cov
 - **Integração API**: Busca automática de capas para suas músicas.
 - **Cache**: Capas são extraídas dos metadados locais ou salvas em disco para carregamento.
 - **Multiplataforma**: Suporte Linux (AppImage, deb, pacman), Windows e macOS.
-- **Design**: modo escuro e micro-interações suaves com Framer Motion.
+- **Tema**: modo escuro e micro-interações suaves com Framer Motion.
 
 ## 📸 Screenshots
 

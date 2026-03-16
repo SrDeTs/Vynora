@@ -58,6 +58,20 @@ export function useLazyAlbumCovers({
       return;
     }
     
+    // Priority 1: Use embedded/cached cover if available from scan
+    if (song.albumCover && (song.albumCover.startsWith('file://') || song.albumCover.startsWith('data:'))) {
+      setState(prev => {
+        const newLoadedCovers = new Map(prev.loadedCovers);
+        newLoadedCovers.set(songKey, song.albumCover!);
+        return {
+          ...prev,
+          loadedCovers: newLoadedCovers,
+          loadedCount: newLoadedCovers.size
+        };
+      });
+      return;
+    }
+
     loadingQueue.current.add(songKey);
     
     setState(prev => ({
@@ -66,30 +80,38 @@ export function useLazyAlbumCovers({
     }));
     
     try {
-      // Check if request was aborted
-      if (signal?.aborted) {
-        throw new Error('Request aborted');
-      }
+      if (signal?.aborted) throw new Error('Request aborted');
       
-      // Try to get iTunes cover with robust search/retry
+      // Target URL for the cover
       let albumCover = await itunesApiService.searchWithRetry(song.artist, song.title);
       
-      // Check again for abort after async operation
-      if (signal?.aborted) {
-        throw new Error('Request aborted');
-      }
+      if (signal?.aborted) throw new Error('Request aborted');
       
-      // If iTunes fails, we will try to use the song.albumCover in getSongCover
-      // We only use the generic fallback as a last resort if even song.albumCover is missing
-      
-      // Preload the image if found on iTunes
+      // If iTunes finds a cover, save it to disk for future use
       if (albumCover && albumCover.startsWith('http')) {
+        try {
+          // Use the new IPC handler to save to local disk cache
+          // This avoids re-downloading next time
+          const localUrl = await (window as any).ipcRenderer.invoke('save-external-cover', {
+            artist: song.artist,
+            album: song.albumName || 'unknown',
+            url: albumCover
+          });
+          if (localUrl) {
+            albumCover = localUrl;
+          }
+        } catch (saveError) {
+          console.error('Failed to persist iTunes cover to disk:', saveError);
+        }
+      }
+
+      // Preload the image if found (regardless of source)
+      if (albumCover) {
         await new Promise<void>((resolve, reject) => {
           const img = new Image();
           img.onload = () => resolve();
           img.onerror = () => reject(new Error('Image load failed'));
           img.src = albumCover!;
-          
           setTimeout(() => reject(new Error('Image load timeout')), 10000);
         });
       }
@@ -102,8 +124,6 @@ export function useLazyAlbumCovers({
         if (albumCover) {
           newLoadedCovers.set(songKey, albumCover);
         } else {
-          // If search failed, we mark as failed but don't set a string value in loadedCovers
-          // so it falls back to song.albumCover
           newFailedCovers.add(songKey);
         }
         
@@ -118,25 +138,16 @@ export function useLazyAlbumCovers({
         };
       });
       
-      if (albumCover) {
-        console.log(`✅ Loaded iTunes cover for: ${song.artist} - ${song.title}`);
+    } catch (error: any) {
+      if (signal?.aborted || error.message === 'Request aborted') {
+        // Silently handle aborts
       } else {
-        console.log(`ℹ️ No iTunes cover found, using local/media fallback for: ${song.artist} - ${song.title}`);
-      }
-      
-    } catch (error) {
-      if (signal?.aborted) {
-        console.log(`⏹️ Aborted loading cover for: ${song.artist} - ${song.title}`);
-      } else {
-        console.error(`❌ Error during cover discovery for: ${song.artist} - ${song.title}`, error);
-        
+        console.error(`❌ Error loading cover for: ${song.artist} - ${song.title}`, error);
         setState(prev => {
           const newLoadingCovers = new Set(prev.loadingCovers);
           const newFailedCovers = new Set(prev.failedCovers);
-          
           newLoadingCovers.delete(songKey);
           newFailedCovers.add(songKey);
-          
           return {
             ...prev,
             loadingCovers: newLoadingCovers,
@@ -151,39 +162,27 @@ export function useLazyAlbumCovers({
   
   // Load covers for songs in priority order
   const loadCoversBatch = useCallback(async (songsToLoad: Song[]): Promise<void> => {
-    // Cancel any existing loading operation
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     
-    // Create new abort controller
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
     
-    // Load covers with small delays to avoid overwhelming the API
     for (let i = 0; i < songsToLoad.length; i++) {
       if (signal.aborted) break;
-      
-      const song = songsToLoad[i];
-      await loadAlbumCover(song, signal);
-      
-      // Small delay between requests (respectful to iTunes API)
+      await loadAlbumCover(songsToLoad[i], signal);
       if (i < songsToLoad.length - 1 && !signal.aborted) {
         await new Promise(resolve => setTimeout(resolve, 200));
       }
     }
   }, [loadAlbumCover]);
   
-  // Effect to load covers based on current center index
   useEffect(() => {
     if (songs.length === 0) return;
     
-    // debounce to avoid high-frequency requests during rapid scroll
     const timer = setTimeout(() => {
-      // Calculate which songs to load
       const songsToLoad: Song[] = [];
-      
-      // First priority: songs in preload radius (immediately visible)
       const preloadStart = Math.max(0, centerIndex - preloadRadius);
       const preloadEnd = Math.min(songs.length - 1, centerIndex + preloadRadius);
       
@@ -194,7 +193,6 @@ export function useLazyAlbumCovers({
         }
       }
       
-      // Second priority: songs in lazy load radius (potentially visible soon)
       const lazyStart = Math.max(0, centerIndex - lazyLoadRadius);
       const lazyEnd = Math.min(songs.length - 1, centerIndex + lazyLoadRadius);
       
@@ -215,7 +213,6 @@ export function useLazyAlbumCovers({
     return () => clearTimeout(timer);
   }, [songs, centerIndex, preloadRadius, lazyLoadRadius, loadCoversBatch, state.loadedCovers, state.loadingCovers]);
   
-  // Get cover for a specific song
   const getSongCover = useCallback((song: Song): string => {
     const songKey = `${song.artist}-${song.title}`;
     return state.loadedCovers.get(songKey) || 
@@ -223,47 +220,38 @@ export function useLazyAlbumCovers({
            itunesApiService.getFallbackArtwork(song.artist, song.title);
   }, [state.loadedCovers]);
   
-  // Check if a song is currently loading
   const isSongLoading = useCallback((songId: string): boolean => {
     const song = songs.find(s => s.id === songId);
     if (!song) return false;
-    
     const songKey = `${song.artist}-${song.title}`;
     return state.loadingCovers.has(songKey);
   }, [songs, state.loadingCovers]);
   
-  // Check if a song failed to load
   const isSongFailed = useCallback((songId: string): boolean => {
     const song = songs.find(s => s.id === songId);
     if (!song) return false;
-    
     const songKey = `${song.artist}-${song.title}`;
     return state.failedCovers.has(songKey);
   }, [songs, state.failedCovers]);
   
-  // Preload a batch of covers (for search results, etc.)
   const preloadCoversBatch = useCallback(async (songsToPreload: Song[]): Promise<void> => {
     await loadCoversBatch(songsToPreload);
   }, [loadCoversBatch]);
   
-  // Clear all cached covers
   const clearCache = useCallback((): void => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
     setState({
       loadedCovers: new Map(),
       loadingCovers: new Set(),
       failedCovers: new Set(),
       loadedCount: 0
     });
-    
     itunesApiService.clearCache();
     loadingQueue.current.clear();
   }, []);
   
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {

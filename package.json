@@ -40,6 +40,7 @@
   "build": {
     "appId": "com.vynora.app",
     "linux": {
+      "icon": "Vynora.png",
       "target": [
         "AppImage",
         "deb",

@@ -2,6 +2,7 @@ import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import crypto from 'crypto';
 import * as musicMetadata from 'music-metadata';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -16,9 +17,15 @@ function createWindow() {
       webSecurity: false // Necessary for local file access and external images
     },
     backgroundColor: '#000000',
+    icon: path.join(__dirname, 'Vynora.png'),
     title: 'Vynora',
     autoHideMenuBar: true
   });
+
+  const coversDir = path.join(app.getPath('userData'), 'covers');
+  if (!fs.existsSync(coversDir)) {
+    fs.mkdirSync(coversDir, { recursive: true });
+  }
 
   Menu.setApplicationMenu(null);
 
@@ -36,8 +43,30 @@ ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory']
   });
-  if (result.canceled) return null;
   return result.filePaths[0];
+});
+
+function getCoverPath(artist, album) {
+  const coversDir = path.join(app.getPath('userData'), 'covers');
+  // Create a stable hash based on artist and album to avoid file system issues
+  const hash = crypto.createHash('md5').update(`${artist || 'unknown'}-${album || 'unknown'}`).digest('hex');
+  return path.join(coversDir, `${hash}.jpg`);
+}
+
+ipcMain.handle('save-external-cover', async (event, { artist, album, url }) => {
+  const coverPath = getCoverPath(artist, album);
+  
+  if (fs.existsSync(coverPath)) return `file://${coverPath}`;
+
+  try {
+    const response = await fetch(url);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    fs.writeFileSync(coverPath, buffer);
+    return `file://${coverPath}`;
+  } catch (error) {
+    console.error('Failed to save external cover:', error);
+    return url; // Fallback to original URL
+  }
 });
 
 ipcMain.handle('scan-folder', async (event, folderPath) => {
@@ -57,17 +86,30 @@ ipcMain.handle('scan-folder', async (event, folderPath) => {
           const metadata = await musicMetadata.parseFile(fullPath);
           let albumCover = null;
           
-          if (metadata.common.picture && metadata.common.picture.length > 0) {
-            const pic = metadata.common.picture[0];
-            const base64 = pic.data.toString('base64');
-            albumCover = `data:${pic.format};base64,${base64}`;
+          const artist = metadata.common.artist || 'Artista Desconhecido';
+          const album = metadata.common.album || 'Álbum Desconhecido';
+          const coverPath = getCoverPath(artist, album);
+
+          // Priority 1: Check if we already have a cached version
+          if (fs.existsSync(coverPath)) {
+            albumCover = `file://${coverPath}`;
+          } 
+          // Priority 2: Extract embedded picture if cache doesn't exist
+          else if (metadata.common.picture && metadata.common.picture.length > 0) {
+            try {
+              const pic = metadata.common.picture[0];
+              fs.writeFileSync(coverPath, pic.data);
+              albumCover = `file://${coverPath}`;
+            } catch (saveErr) {
+              console.error('Error saving embedded cover:', saveErr);
+            }
           }
 
           songs.push({
-            id: fullPath, // Use path as ID
+            id: fullPath,
             title: metadata.common.title || path.basename(file, path.extname(file)),
-            artist: metadata.common.artist || 'Artista Desconhecido',
-            albumName: metadata.common.album || 'Álbum Desconhecido',
+            artist: artist,
+            albumName: album,
             year: metadata.common.year,
             albumCover: albumCover,
             localPath: fullPath,

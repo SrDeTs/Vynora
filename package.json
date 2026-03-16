@@ -40,11 +40,12 @@
   "build": {
     "appId": "com.vynora.app",
     "linux": {
+      "category": "AudioVideo",
+      "maintainer": "Michael <michael@example.com>",
       "icon": "build/icon.png",
       "target": [
         "AppImage",
         "deb",
-        "rpm",
         "pacman",
         "zip"
       ],
@@ -72,6 +73,7 @@
       "dist/**/*",
       "electron-main.js",
       "package.json",
+      "Vynora.png",
       "node_modules/music-metadata/**/*"
     ],
     "asar": true,

@@ -47,4 +47,15 @@ npm run electron:dev
 Eu vi isso no Figma de um cara que criou isso com ia entao eu fiz o downlaod do projeto dele e comecei a buildar ele e brincar com o app entao so estou salvando ele no gihub para caso um dia eu queira mexer nele dnv
 caso alguem queira testa e so baixar o app
 
+## Créditos
+
+https://github.com/frontendfocus-764
+Peguei muitas das animacoes que ele fez pra usar no codigo do app
+
+https://github.com/frontendfocus-764/frontendfocus-shared
+link caso alguem queira ver o trabalho desse cara ele FODA!!
+
+Projeto original
+https://www.figma.com/community/file/1545557016596999853/vynora
+
 [English Version (English README)](README%20(EN).md)

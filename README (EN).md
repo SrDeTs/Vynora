@@ -54,4 +54,13 @@ npm run electron:dev
 
 I saw this on Figma from a guy who created it with AI, so I downloaded his project and started building it and playing around with the app. I'm just saving it on GitHub in case I want to work on it again someday. If anyone wants to test it, just download the app.
 
-[English Version (English README)](README%20(EN).md)
+## Credits
+
+https://github.com/frontendfocus-764
+I used many of the animations he made in the app's code.
+
+https://github.com/frontendfocus-764/frontendfocus-shared
+link in case anyone wants to see this guy's work, he's AWESOME!!
+
+Original Project
+https://www.figma.com/community/file/1545557016596999853/vynora

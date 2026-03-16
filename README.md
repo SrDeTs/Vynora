@@ -53,7 +53,7 @@ https://github.com/frontendfocus-764
 Peguei muitas das animacoes que ele fez pra usar no codigo do app
 
 https://github.com/frontendfocus-764/frontendfocus-shared
-link caso alguem queira ver o trabalho desse cara ele FODA!!
+link caso alguem queira ver o trabalho desse cara! ele e FODA!!
 
 Projeto original
 https://www.figma.com/community/file/1545557016596999853/vynora

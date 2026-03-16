@@ -6,4 +6,4 @@ Eu vi isso no Figma de um cara que criou isso com ia entao eu fiz o downlaod do 
 
 # english
 
-![README (EN).md]
+!README (EN).md

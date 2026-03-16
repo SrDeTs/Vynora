@@ -37,9 +37,11 @@ package() {
 exec electron /usr/lib/$pkgname/electron-main.js \"\$@\"" > "$pkgdir/usr/bin/$pkgname"
   chmod +x "$pkgdir/usr/bin/$pkgname"
 
-  # Instala o ícone do sistema (versão otimizada)
-  install -dm755 "$pkgdir/usr/share/icons/hicolor/512x512/apps"
-  cp Vynora.png "$pkgdir/usr/share/icons/hicolor/512x512/apps/vynora.png"
+  # Instala os ícones do sistema em múltiplas resoluções
+  for size in 16 32 48 64 128 256 512; do
+    install -dm755 "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps"
+    cp build/icons/${size}x${size}/apps/vynora.png "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/vynora.png"
+  done
   
   # Pixmap de fallback
   install -dm755 "$pkgdir/usr/share/pixmaps"

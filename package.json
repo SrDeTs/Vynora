@@ -40,9 +40,9 @@
   "build": {
     "appId": "com.vynora.app",
     "linux": {
-      "category": "Audio",
-      "maintainer": "SrDeTs <github.com/SrDeTs>",
-      "icon": "Vynora.png",
+      "category": "AudioVideo",
+      "maintainer": "Michael <michael@example.com>",
+      "icon": "build/icons",
       "target": [
         "AppImage",
         "deb",
